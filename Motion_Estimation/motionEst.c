@@ -34,6 +34,7 @@ int processBMP(char* imgName, bmpfile_t** b, int* height, int* width, int***bmpA
   return 0;
 }
 
+// outputs a new array with the same contents as originalArray
 int** copyArray(int** originalArray, int width, int height) {
   int i, x, y;
   int** copyArray;
@@ -51,6 +52,17 @@ int** copyArray(int** originalArray, int width, int height) {
   return copyArray;
 }
 
+// frees a 2D array
+void free2dArray(int** array, int height) {
+  int y;
+  for (y = 0; y < height; y++) {
+    free(array[y]);
+  }
+  free(array);
+}
+
+// gets color at location (x,y) in bmpArray. If point is not within the bounds
+// of the array, returns the color 0
 int getColor(int** bmpArray, int width, int height, int x, int y) {
   if (x < 0 || x >= width || y < 0 || y >= height)
     // if out of bounds, just return 0
@@ -58,6 +70,9 @@ int getColor(int** bmpArray, int width, int height, int x, int y) {
   return bmpArray[y][x];
 }
 
+// find the mean squared error between two blocks in bmp1Array and bmp2Array.
+// the blocks top left corner coordinates are specified by (x1, y1) and
+// (x2, y2). 
 int findMSE(int** bmp1Array, int** bmp2Array, int width, int height, int x1,
 	    int y1, int x2, int y2, int blockWidth) {
   int i, j, total, difference;
@@ -72,6 +87,9 @@ int findMSE(int** bmp1Array, int** bmp2Array, int width, int height, int x1,
   return total / (blockWidth * blockWidth);
 }
 
+// searches within the searchbounds in bmp2Array for the block that best matches
+// the block in bmp1Array.
+// The coordinates and boundaries all specify the top left corner of a block
 void findNewPos(int** bmp1Array, int** bmp2Array, int width, int height, int x1,
 		int y1, int* x2, int* y2, int blockWidth, int searchBoundXLow,
 		int searchBoundXHigh, int searchBoundYLow, int searchBoundYHigh) {
@@ -91,11 +109,13 @@ void findNewPos(int** bmp1Array, int** bmp2Array, int width, int height, int x1,
   }
 }
 
+// plots a point onto bmpArray at (x,y) (if within the bounds of the array)
 void plotPoint(int** bmpArray, int width, int height, int x, int y, int color) {
   if (x > 0 && x < width && y > 0 && y < height)
     bmpArray[y][x] = color;
 }
 
+// draws a line between (x1, y1) and (x2,y2).
 void drawVector(int** bmpArray, int width, int height, int x1, int y1, int x2, int y2) {
   float x,y,xinc,yinc,dx,dy;
   int k, step, i, j;
@@ -125,24 +145,28 @@ void drawVector(int** bmpArray, int width, int height, int x1, int y1, int x2, i
   }
 }
 
+// determines the search bounds based on the search padding.
+// searchBounds all refer to the top left corners of blocks
 void findSearchBounds(int width, int height, int searchPadding,
-		     int topLeftX, int topLeftY, int blockWidth,
+		     int topLeftX, int topLeftY,
 		     int* searchBoundXLow, int* searchBoundXHigh,
 		     int* searchBoundYLow, int* searchBoundYHigh) {
   *searchBoundXLow = topLeftX - searchPadding;
   if (*searchBoundXLow < 0)
     *searchBoundXLow = 0;
-  *searchBoundXHigh = topLeftX + blockWidth + searchPadding;
+  *searchBoundXHigh = topLeftX + searchPadding;
   if (*searchBoundXHigh > width)
     *searchBoundXHigh = width;
   *searchBoundYLow = topLeftY - searchPadding;
   if (*searchBoundYLow < 0)
     *searchBoundYLow = 0;
-  *searchBoundYHigh = topLeftY + blockWidth + searchPadding;
+  *searchBoundYHigh = topLeftY + searchPadding;
   if (*searchBoundYHigh > height)
     *searchBoundYHigh = height;
 }
 
+// determines the motion of blocks from bmp1Array to bmp2Array, drawing motion
+// vectors on outArray
 void motionEstimation(int** bmp1Array, int** bmp2Array, int** outArray,
 		      int width, int height, int blockWidth, int searchPadding) {
   int i, j, searchBoundXLow, searchBoundXHigh, searchBoundYLow, searchBoundYHigh;
@@ -151,7 +175,7 @@ void motionEstimation(int** bmp1Array, int** bmp2Array, int** outArray,
   for (i = 0; i < height; i += blockWidth) {
     for (j = 0; j < width; j += blockWidth) {
       // use findSearchBounds to get bounds to search
-      findSearchBounds(width, height, searchPadding, j, i, blockWidth,
+      findSearchBounds(width, height, searchPadding, j, i,
 		       &searchBoundXLow, &searchBoundXHigh, &searchBoundYLow,
 		       &searchBoundYHigh);
       // use findNewPos to get new pos
@@ -173,26 +197,35 @@ int main(int argc, char ** argv) {
   bmpfile_t *bmp1, *bmp2, *bmpOut;
   char *imgName1 = NULL, *imgName2 = NULL;
 
-  blockWidth = 16;
-  searchPadding = 8;
-  
   // get command line arguments
-  if (argc != 3) {
+  if (argc < 3) {
 	printf("Incorrect number of arguments.\n");
 	return -1;
   } else {
     imgName1 = argv[1];
     imgName2 = argv[2];
   }
+  if (argc >= 4)
+    blockWidth = atoi(argv[3]);
+  else
+    blockWidth = 16;
+  if (argc >= 5)
+    searchPadding = atoi(argv[4]);
+  else
+    searchPadding = 8;
 
   // create bmpfiles, widths heights, and color index arrays
   if (processBMP(imgName1, &bmp1, &height1, &width1, &bmp1Array) != 0) return -1;
   if (processBMP(imgName2, &bmp2, &height2, &width2, &bmp2Array) != 0) return -1;
 
+  if (height1 != height2 || width1 != width2) {
+    printf("Images must have the same dimentions\n");
+    return -1;
+  }
+
   outArray = copyArray(bmp1Array, width1, height1);
   if (outArray == NULL) return -1;
 
-  // do stuff
   motionEstimation(bmp1Array, bmp2Array, outArray, width1, height1, blockWidth,
 		   searchPadding);
 
@@ -208,6 +241,8 @@ int main(int argc, char ** argv) {
   }
 
   bmp_save(bmpOut, "motionEstOut.bmp");
-
+  free2dArray(bmp1Array, height1);
+  free2dArray(bmp2Array, height2);
+  free2dArray(outArray, height1);
   return 0;
 }
