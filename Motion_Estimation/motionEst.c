@@ -194,7 +194,7 @@ int main(int argc, char ** argv) {
   int i, j, x, y, blockWidth, searchPadding;
   int **bmp1Array, **bmp2Array, **outArray;
   unsigned int width1, height1, width2, height2;
-  bmpfile_t *bmp1, *bmp2, *bmpOut;
+  bmpfile_t *bmp1, *bmp2;
   char *imgName1 = NULL, *imgName2 = NULL;
 
   // get command line arguments
@@ -229,20 +229,18 @@ int main(int argc, char ** argv) {
   motionEstimation(bmp1Array, bmp2Array, outArray, width1, height1, blockWidth,
 		   searchPadding);
 
-  // create an output file
-  bmpOut = bmp1;
-  if (bmpOut == NULL) return -1;
-
   // set array colors to bmp
   for (y = 0; y < height1; y++) {
     for (x = 0; x < width1; x++) {
-      bmp_set_pixel(bmpOut, x, y, *get_8bpp_color(bmpOut, outArray[y][x]));
+      bmp_set_pixel(bmp1, x, y, *get_8bpp_color(bmp1, outArray[y][x]));
     }
   }
 
-  bmp_save(bmpOut, "motionEstOut.bmp");
+  bmp_save(bmp1, "motionEstOut.bmp");
   free2dArray(bmp1Array, height1);
   free2dArray(bmp2Array, height2);
   free2dArray(outArray, height1);
+  bmp_destroy(bmp1);
+  bmp_destroy(bmp2);
   return 0;
 }
