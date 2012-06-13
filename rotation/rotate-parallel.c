@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <omp.h>
+#include <time.h>
 #include "bmpfile.h"
 
 #ifndef M_PI
@@ -22,7 +23,7 @@ int max(int a, int b)
 	else return b;
 }
 
-void rotate(bmpfile_t *img, double rotationDegrees, int nthreads)
+bmpfile_t* rotate(bmpfile_t *img, double rotationDegrees, int nthreads)
 {
 	bmpfile_t *rimg; // rotated image
 	int width, height, rwidth, rheight;
@@ -71,7 +72,7 @@ void rotate(bmpfile_t *img, double rotationDegrees, int nthreads)
 
 	omp_set_num_threads(nthreads);
 
-	#pragma omp parallel for private(desty, srcx, srcy, srcpx)
+	#pragma omp parallel for private(desty, srcx, srcy, srcpx) schedule(dynamic, 4)
 	for(destx = 0; destx < rwidth; destx++)
 		for(desty = 0; desty < rheight; desty++)
 		{
@@ -92,9 +93,7 @@ void rotate(bmpfile_t *img, double rotationDegrees, int nthreads)
 				bmp_set_pixel(rimg, destx, desty, *srcpx);
 			}
 		}
-
-	// Output file
-	bmp_save(rimg, "test-out.bmp"); 
+	return rimg;
 
 }
 
@@ -120,7 +119,12 @@ int main(int argc, char* argv[])
 	}
 
 	// Rotate image and output rotated image
-	rotate(img, rotationDegrees, nthreads);
+	time_t t1, t2;
+	time(&t1);
+	bmpfile_t *rimg = rotate(img, rotationDegrees, nthreads);
+	time(&t2);
+	printf("Time to perform parallel rotation using %d threads: %f seconds\n", nthreads, difftime(t2, t1));
+	bmp_save(rimg, "test-out.bmp"); 
 
 	return 0;
 }

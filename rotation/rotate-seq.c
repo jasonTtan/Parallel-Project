@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include "bmpfile.h"
 
 #ifndef M_PI
@@ -21,7 +22,7 @@ int max(int a, int b)
 	else return b;
 }
 
-void rotate(bmpfile_t *img, double rotationDegrees)
+bmpfile_t* rotate(bmpfile_t *img, double rotationDegrees)
 {
 	bmpfile_t *rimg; // rotated image
 	int width, height, rwidth, rheight;
@@ -60,7 +61,8 @@ void rotate(bmpfile_t *img, double rotationDegrees)
 
 	// Construct rotated image pixel by pixel
 	rimg = bmp_create(rwidth, rheight, 8);
-	int xoffset, yoffset, rxoffset, ryoffset, srcx, srcy, destx, desty;
+	int xoffset, yoffset, rxoffset, ryoffset, destx, desty;
+	double srcx, srcy;
 	rgb_pixel_t* srcpx;
 	rgb_pixel_t fill = {200, 200, 200, 1};
 	xoffset = width / 2;
@@ -88,10 +90,7 @@ void rotate(bmpfile_t *img, double rotationDegrees)
 				bmp_set_pixel(rimg, destx, desty, *srcpx);
 			}
 		}
-
-	// Output file
-	bmp_save(rimg, "test-out.bmp"); 
-
+	return rimg;
 }
 
 int main(int argc, char* argv[])
@@ -114,8 +113,13 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	// Rotate image and output rotated image
-	rotate(img, rotationDegrees);
-
+	// Rotate image and save/output rotated image
+	time_t t1, t2;
+	time(&t1);
+	bmpfile_t *rimg = rotate(img, rotationDegrees);
+	time(&t2);
+	printf("Time to perform sequential rotation: %f seconds\n", difftime(t2, t1));
+	bmp_save(rimg, "test-out.bmp"); 
+	
 	return 0;
 }
