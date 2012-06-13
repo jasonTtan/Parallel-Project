@@ -63,7 +63,6 @@ bmpfile_t* rotate(bmpfile_t *img, double rotationDegrees)
 	rimg = bmp_create(rwidth, rheight, 8);
 	int xoffset, yoffset, rxoffset, ryoffset, destx, desty;
 	double srcx, srcy;
-	rgb_pixel_t* srcpx;
 	rgb_pixel_t fill = {200, 200, 200, 1};
 	xoffset = width / 2;
 	yoffset = height / 2;
@@ -83,11 +82,66 @@ bmpfile_t* rotate(bmpfile_t *img, double rotationDegrees)
 			srcy = -(destx*sine) + (desty*cosine) + yoffset;
 			destx += rxoffset; desty += ryoffset;
 
-			// If source pixel is within original image, then set rotated pixel equal to source pixel
-			if(srcx >= 0 && srcx < width && srcy >= 0 && srcy < height)
+			/* If source pixel is within original image, then interpolate using bilinear interpolation
+ 			   to smooth out the rotation and set dest pixel to this interpolated pixel */
+			if(srcx >= 0 && srcx <= width-1 && srcy >= 0 && srcy <= height-1)
 			{
-				srcpx = bmp_get_pixel(img, srcx, srcy);
-				bmp_set_pixel(rimg, destx, desty, *srcpx);
+				// Calculate positions of nearest neighbor pixels
+				int leftx = (int) srcx; int rightx = leftx + 1;
+				int upy = (int) srcy; int downy = srcy + 1;
+
+				// Values used for bilinear interpolation
+				double dlx = (double) rightx - srcx;
+				double drx = srcx - (double) leftx;
+				double duy = (double) downy - srcy;
+				double ddy = srcy - (double) upy;
+
+				// Retrieve RGBA values of these pixels
+				double ared, agreen, ablue, bred, bgreen, bblue, cred, cgreen, cblue, dred, dgreen, dblue;
+				if(leftx >= 0 && upy >= 0)
+				{
+					rgb_pixel_t *lusrcpx = bmp_get_pixel(img, leftx, upy);
+					ared = lusrcpx->red;
+					agreen = lusrcpx->green;
+					ablue = lusrcpx->blue;
+				}
+
+				if(rightx < width && upy >= 0)
+				{
+					rgb_pixel_t *rusrcpx = bmp_get_pixel(img, rightx, upy);
+					bred = rusrcpx->red;
+					bgreen = rusrcpx->green;
+					bblue = rusrcpx->blue;
+				}
+
+				if(leftx >= 0 && downy < height)
+				{
+					rgb_pixel_t *ldsrcpx = bmp_get_pixel(img, leftx, downy);
+					cred = ldsrcpx->red;
+					cgreen = ldsrcpx->green;
+					cblue = ldsrcpx->blue;
+				}
+
+				if(rightx < width && downy < height)
+				{
+					rgb_pixel_t *rdsrcpx = bmp_get_pixel(img, rightx, downy);
+					dred = rdsrcpx->red;
+					dgreen = rdsrcpx->green;
+					dblue = rdsrcpx->blue;
+				}
+				
+				// Calculate interpolated pixel values
+				double red = ared*dlx*duy + bred*drx*duy + cred*dlx*ddy + dred*drx*ddy;
+				double green = agreen*dlx*duy + bgreen*drx*duy + cgreen*dlx*ddy + dgreen*drx*ddy;
+				double blue = ablue*dlx*duy + bblue*drx*duy + cblue*dlx*ddy + dblue*drx*ddy;
+	
+				// Set destination pixel to interpolated source pixel
+				rgb_pixel_t srcpx;
+				srcpx.red = (uint8_t) red;
+				srcpx.green = (uint8_t) green;
+				srcpx.blue = (uint8_t) blue;
+				srcpx.alpha = 1;
+				bmp_set_pixel(rimg, destx, desty, srcpx);
 			}
 		}
 	return rimg;
@@ -118,7 +172,7 @@ int main(int argc, char* argv[])
 	time(&t1);
 	bmpfile_t *rimg = rotate(img, rotationDegrees);
 	time(&t2);
-	printf("Time to perform sequential rotation: %f seconds\n", difftime(t2, t1));
+	printf("Time to perform sequential rotation: %d seconds\n", (int)difftime(t2, t1));
 	bmp_save(rimg, "test-out.bmp"); 
 	
 	return 0;
