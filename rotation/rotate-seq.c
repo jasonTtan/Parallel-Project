@@ -87,8 +87,23 @@ bmpfile_t* rotate(bmpfile_t *img, double rotationDegrees)
 			if(srcx >= 0 && srcx <= width-1 && srcy >= 0 && srcy <= height-1)
 			{
 				// Calculate positions of nearest neighbor pixels
-				int leftx = (int) srcx; int rightx = leftx + 1;
-				int upy = (int) srcy; int downy = srcy + 1;
+				int leftx, rightx, upy, downy;
+				leftx = (int) srcx; 
+				upy = (int) srcy; 
+				if(leftx < width - 1)
+					rightx = leftx + 1;
+				else
+				{
+					rightx = leftx;
+					leftx -= 1;
+				}
+				if(upy < height - 1)
+					downy = srcy + 1;
+				else
+				{
+					downy = upy;
+					upy -= 1;
+				}
 
 				// Values used for bilinear interpolation
 				double dlx = (double) rightx - srcx;
@@ -97,38 +112,25 @@ bmpfile_t* rotate(bmpfile_t *img, double rotationDegrees)
 				double ddy = srcy - (double) upy;
 
 				// Retrieve RGBA values of these pixels
-				double ared, agreen, ablue, bred, bgreen, bblue, cred, cgreen, cblue, dred, dgreen, dblue;
-				if(leftx >= 0 && upy >= 0)
-				{
-					rgb_pixel_t *lusrcpx = bmp_get_pixel(img, leftx, upy);
-					ared = lusrcpx->red;
-					agreen = lusrcpx->green;
-					ablue = lusrcpx->blue;
-				}
+				rgb_pixel_t *lusrcpx = bmp_get_pixel(img, leftx, upy);
+				double ared = lusrcpx->red;
+				double agreen = lusrcpx->green;
+				double ablue = lusrcpx->blue;
 
-				if(rightx < width && upy >= 0)
-				{
-					rgb_pixel_t *rusrcpx = bmp_get_pixel(img, rightx, upy);
-					bred = rusrcpx->red;
-					bgreen = rusrcpx->green;
-					bblue = rusrcpx->blue;
-				}
+				rgb_pixel_t *rusrcpx = bmp_get_pixel(img, rightx, upy);
+				double bred = rusrcpx->red;
+				double bgreen = rusrcpx->green;
+				double bblue = rusrcpx->blue;
 
-				if(leftx >= 0 && downy < height)
-				{
-					rgb_pixel_t *ldsrcpx = bmp_get_pixel(img, leftx, downy);
-					cred = ldsrcpx->red;
-					cgreen = ldsrcpx->green;
-					cblue = ldsrcpx->blue;
-				}
+				rgb_pixel_t *ldsrcpx = bmp_get_pixel(img, leftx, downy);
+				double cred = ldsrcpx->red;
+				double cgreen = ldsrcpx->green;
+				double cblue = ldsrcpx->blue;
 
-				if(rightx < width && downy < height)
-				{
-					rgb_pixel_t *rdsrcpx = bmp_get_pixel(img, rightx, downy);
-					dred = rdsrcpx->red;
-					dgreen = rdsrcpx->green;
-					dblue = rdsrcpx->blue;
-				}
+				rgb_pixel_t *rdsrcpx = bmp_get_pixel(img, rightx, downy);
+				double dred = rdsrcpx->red;
+				double dgreen = rdsrcpx->green;
+				double dblue = rdsrcpx->blue;
 				
 				// Calculate interpolated pixel values
 				double red = ared*dlx*duy + bred*drx*duy + cred*dlx*ddy + dred*drx*ddy;
