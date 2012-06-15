@@ -172,4 +172,6 @@ int main(int argc, char** argv)
 	for ( x = 0; x < width; x++ )
 		free(cornerness_map[x]);
 	free(cornerness_map);
+
+	return 0;
 }
