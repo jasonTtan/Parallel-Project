@@ -3,19 +3,17 @@
 #include <limits.h>
 #include <math.h>
 #include <omp.h>
-#include "bmpfile.c"
+#include <sys/time.h>
+#include "libbmp/bmpfile.h"
 
 #define blockSize 4
 
 // creates a bmpfile, the image's width and height, and an array holding all of
 // its color indexes.
-int processBMP(char* imgName, bmpfile_t** b, int* height, int* width, int***bmpArray) {
+int processBMP(bmpfile_t* b, int* height, int* width, int***bmpArray) {
   int i, x, y;
-  
-  // open the bmp files
-  *b = bmp_create_8bpp_from_file(imgName);
-  *width = bmp_get_width(*b);
-  *height = bmp_get_height(*b);
+  *width = bmp_get_width(b);
+  *height = bmp_get_height(b);
 
   // create an array to store the bmp's color indexies
   *bmpArray = (int**) malloc(*height*sizeof(int*));
@@ -29,12 +27,13 @@ int processBMP(char* imgName, bmpfile_t** b, int* height, int* width, int***bmpA
 #pragma omp parallel for private(y, x)
   for (y = 0; y < *height; y++) {
     for (x = 0; x < *width; x++) {
-      (*bmpArray)[y][x] = find_closest_color(*b, *bmp_get_pixel(*b, x, y));
+      (*bmpArray)[y][x] = find_closest_color(b, *bmp_get_pixel(b, x, y));
     }
   }
   
   return 0;
 }
+
 
 // outputs a new array with the same contents as originalArray
 int** copyArray(int** originalArray, int width, int height) {
@@ -204,6 +203,7 @@ int main(int argc, char ** argv) {
   unsigned int width1, height1, width2, height2;
   bmpfile_t *bmp1, *bmp2;
   char *imgName1 = NULL, *imgName2 = NULL;
+  struct timeval tim;
 
   // get command line arguments
   if (argc < 3) {
@@ -222,9 +222,17 @@ int main(int argc, char ** argv) {
   else
     searchPadding = 8;
 
-  // create bmpfiles, widths heights, and color index arrays
-  if (processBMP(imgName1, &bmp1, &height1, &width1, &bmp1Array) != 0) return -1;
-  if (processBMP(imgName2, &bmp2, &height2, &width2, &bmp2Array) != 0) return -1;
+  // create BMPs
+  bmp1 = bmp_create_8bpp_from_file(imgName1);
+  bmp2 = bmp_create_8bpp_from_file(imgName2);
+  
+
+  gettimeofday(&tim, NULL);
+  double t1=tim.tv_sec+(tim.tv_usec/1000000.0);
+  
+  // get bmp widths heights, and color index arrays
+  if (processBMP(bmp1, &height1, &width1, &bmp1Array) != 0) return -1;
+  if (processBMP(bmp2, &height2, &width2, &bmp2Array) != 0) return -1;
 
   if (height1 != height2 || width1 != width2) {
     printf("Images must have the same dimentions\n");
@@ -247,6 +255,10 @@ int main(int argc, char ** argv) {
     }
   }
 
+  gettimeofday(&tim, NULL);
+  double t2=tim.tv_sec+(tim.tv_usec/1000000.0);
+  printf("Parallel Algorithm Elapsed Time: %.5f seconds\n", t2 - t1);
+  
   bmp_save(bmp1, "motionEstOut.bmp");
   free2dArray(bmp1Array, height1);
   free2dArray(bmp2Array, height2);
