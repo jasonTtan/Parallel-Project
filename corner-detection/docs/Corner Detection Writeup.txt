@@ -1,0 +1,41 @@
+Guide to Source Code
+====================
+The code for the corner detection compiles using the make file found in the corner-detection folder. Run
+	make all
+to compile everything and run using
+	./bin/corner-detection-sequential input-file output-file [threshold]
+for the sequential version and 
+	./bin/corner-detection-parallel input-file output-file [threshold] [num_threads]
+for the parallel version.
+
+
+The corner detection code works and is able to detect some corners marking them with a blue dot. Some outstanding issues occur, however, if you supply an image that does not have a blue pixel in its color map. Because the original bmp does not have the blue pixel, when the program tries to color in corners with blue, it won’t be able to. It will try to choose a color close to that but that color may not be visible enough.
+
+The code contains two main for loops. One loop discovers the corner pixels and the other draws the highlighted pixel onto the original image. I parallelized the two for loops using OpenMP. These pragmas can be seen in corner-detection-parallel.c in the src folder.
+
+Project Breakdown
+=================
+I chose to use OpenMP because OpenMP excels at domain decomposition. In addition, I feel most comfortable with OpenMP, which will make it easier for me to parallelize the code. More specifically, More specifically, for the first for loop, I chose to parallelize the outer most for loop because it allows for creating the most amount of work for each thread reducing redundant work and the overhead of thread spawning. 
+
+There was no need for any synchronization mechanisms because each thread only wrote to their independent pixel position. Threads read other pixels, but because it was a read after read operation, there was no risk for concurrency issues.
+
+Quality of the corner detection was the only thing that may have been sacrificed. The program was able to discover some corners, but not all corners. This may have been due to the way the non-maximal suppression was implemented.
+
+For the image library, I used the modified libbmp library supplied by the TA.
+
+Bugs & Challenges
+=================
+The first bug was with images. After writing my code (without non-maximal suppression) and running the program, I was able to see edges highlighted, but the color of the image was distorted. I had a gray-scaled image, but the resulting image had some of the grays colored blue-ish. After a great deal of debugging and consulting with my partners, I discovered the issue was with the image itself. Apparently, because of the implementation of the image library and the limited depth of 8 bit bmp's, new images are not created with the same color indexes as images read in. To remedy the issue, I modified the image to not eliminate unused colors from the color index such that blue is one of the pixels in the color table.
+
+The second bug was with the non-maximal suppression. My first implementation of the non-maximal suppression didn't work and I wasn't able to see any corners highlighted. I mostly saw odd lines. After debugging the code, I was able to find small errors in my code and get the corner detection working. I think another issue that made it more difficult to fix was the first bug I had in which the image was missing the highlight color. Fixing that problem first helped me discover what was actually wrong and solve the problem.
+
+I also faced small issues with OpenMP because I didn't properly make sure to specify the nested loop variables as private. This lead to segmentation faults and printing out stuff didn't help me find the problem at all. It just took time and more attention to detail to find the bug and remedy it.
+
+Another annoyance I faced was waiting for 2-10 minutes to test the program on large images...
+
+I found that it was difficult to debug parallel programs because I wasn't able to clearly see the control flow from output to the screen. I had to rely more on looking at the code to find bugs. 
+
+Final Results
+=============
+The parallelized version of the code did a good amount better than the sequential version. The speedup was not not perfect but made sense because of the overhead of thread creation and the sequential part of the code. The best speedup was a ~6x speedup on lnxsrv with 8 threads and an image with a size of 100MB (10,000px x 10,000px).
+
