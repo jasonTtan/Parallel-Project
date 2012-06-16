@@ -8,7 +8,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-double difftime(struct timeval t2, struct timeval t1)
+double dtime(struct timeval t2, struct timeval t1)
 {
 	double seconds = (t2.tv_sec - t1.tv_sec) * 1000;
 	seconds += (t2.tv_usec - t1.tv_usec) / 1000;
@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
 	gettimeofday(&t1, NULL);
 	bmpfile_t *rimg = rotate(img, rotationDegrees);
 	gettimeofday(&t2, NULL);
-	printf("Time to perform sequential rotation: %.2f milliseconds\n", difftime(t2, t1));
+	printf("Time to perform sequential rotation: %.2f milliseconds\n", dtime(t2, t1));
 	bmp_save(rimg, "test-out.bmp"); 
 	
 	return 0;
