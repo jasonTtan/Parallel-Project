@@ -12,7 +12,23 @@ if [ $# -lt 1 ]; then
 else
 
 	if [ "$1" = "motion-estimation" ]; then
-		echo ${@:2};
+		if [ $# -lt ]; then
+			echo -e $1 "usage: ";
+			echo -e 	"\t$0 $1 input-file1 input-file2 [blockWidth] [searchPadding]";
+
+			exit 0;
+		else
+			./Motion_Estimation/bin/motion-estimation-sequential "${@:2}";
+		fi
+	elif [ "$1" = "motion-estimation-parallel" ]; then
+		if [ $# -lt ]; then
+			echo -e $1 "usage: ";
+			echo -e 	"\t$0 $1 input-file1 input-file2 [blockWidth] [searchPadding]";
+
+			exit 0;
+		else
+			./Motion_Estimation/bin/motion-estimation-parallel "${@:2}";
+		fi
 	elif [ "$1" = "corner-detection" ]; then
 		if [ $# -lt 3 ]; then
 			echo -e $1 "usage: ";
