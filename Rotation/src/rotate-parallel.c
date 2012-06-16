@@ -11,8 +11,8 @@
 
 double difftime(struct timeval t2, struct timeval t1)
 {
-	double seconds = t2.tv_sec - t1.tv_sec;
-	double useconds = t2.tv_usec - t1.tv_usec;
+	double seconds = (t2.tv_sec - t1.tv_sec) * 1000;
+	seconds += (t2.tv_usec - t1.tv_usec) / 1000;
 	return seconds;
 }
 
@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
 	gettimeofday(&t1, NULL);
 	bmpfile_t *rimg = rotate(img, rotationDegrees, nthreads);
 	gettimeofday(&t2, NULL);
-	printf("Time to perform parallel rotation using %d threads: %.2f seconds\n", nthreads, difftime(t2, t1));
+	printf("Time to perform parallel rotation using %d threads: %.2f milliseconds\n", nthreads, difftime(t2, t1));
 	bmp_save(rimg, "test-out.bmp"); 
 
 	return 0;
