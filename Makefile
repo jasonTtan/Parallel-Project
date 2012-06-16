@@ -1,6 +1,6 @@
 all:
 	#motion-estimation
-	#make --directory=Motion_Estimation all
+	make --directory=Motion_Estimation all
 	
 	#corner-detection
 	make --directory=corner-detection all
@@ -11,5 +11,6 @@ all:
 	#scaling
 
 	#gaussian-blur
+	make --directory=gaussianblur all
 
 	#high-pass-filter
