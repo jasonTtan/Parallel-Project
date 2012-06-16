@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 	// arg count must be at least 2 to have a filename arg
 	if ( argc < 3 )
 	{
-		printf("Usage: %s input_file output_file [threshold]\n", argv[0]);
+		printf("Usage: %s input_file output_file [threshold] [num_threads]\n", argv[0]);
 		return 1;
 	}
 
@@ -181,6 +181,6 @@ int main(int argc, char** argv)
 	for ( x = 0; x < width; x++ )
 		free(cornerness_map[x]);
 	free(cornerness_map);
-	
+
 	return 0;
 }
