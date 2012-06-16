@@ -1,13 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <omp.h>
-#include <time.h>
+#include <sys/time.h>
 #include "bmpfile.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+
+double difftime(struct timeval t2, struct timeval t1)
+{
+	double seconds = t2.tv_sec - t1.tv_sec;
+	double useconds = t2.tv_usec - t1.tv_usec;
+	return seconds;
+}	
 
 int min(int a, int b)
 {
@@ -23,7 +29,7 @@ int max(int a, int b)
 	else return b;
 }
 
-bmpfile_t* rotate(bmpfile_t *img, double rotationDegrees, int nthreads)
+bmpfile_t* rotate(bmpfile_t *img, double rotationDegrees)
 {
 	bmpfile_t *rimg; // rotated image
 	int width, height, rwidth, rheight;
@@ -64,16 +70,12 @@ bmpfile_t* rotate(bmpfile_t *img, double rotationDegrees, int nthreads)
 	rimg = bmp_create(rwidth, rheight, 8);
 	int xoffset, yoffset, rxoffset, ryoffset, destx, desty;
 	double srcx, srcy;
-	rgb_pixel_t *lusrcpx, *rusrcpx, *ldsrcpx, *rdsrcpx;
 	rgb_pixel_t fill = {200, 200, 200, 1};
 	xoffset = width / 2;
 	yoffset = height / 2;
 	rxoffset = rwidth / 2;
 	ryoffset = rheight / 2;
 
-	omp_set_num_threads(nthreads);
-
-	#pragma omp parallel for private(desty, srcx, srcy) schedule(dynamic, 4)
 	for(destx = 0; destx < rwidth; destx++)
 		for(desty = 0; desty < rheight; desty++)
 		{
@@ -91,7 +93,7 @@ bmpfile_t* rotate(bmpfile_t *img, double rotationDegrees, int nthreads)
  			   to smooth out the rotation and set dest pixel to this interpolated pixel */
 			if(srcx >= 0 && srcx <= width-1 && srcy >= 0 && srcy <= height-1)
 			{
-// Calculate positions of nearest neighbor pixels
+				// Calculate positions of nearest neighbor pixels
 				int leftx, rightx, upy, downy;
 				leftx = (int) srcx; 
 				upy = (int) srcy; 
@@ -152,21 +154,19 @@ bmpfile_t* rotate(bmpfile_t *img, double rotationDegrees, int nthreads)
 			}
 		}
 	return rimg;
-
 }
 
 int main(int argc, char* argv[])
 {
-	if(argc != 4)
+	if(argc != 3)
 	{
-		printf("Usage: ./rotate-seq <image file> <rotation degrees> <nthreads>\n");
+		printf("Usage: ./rotate-seq [image-file] [rotation degrees]\n");
 		return 1;
 	}
 	
 	// Read file arguments
 	char* imgfile = argv[1];
 	double rotationDegrees = atof(argv[2]);
-	int nthreads = atoi(argv[3]);
 	
 	// Create BMP for input image
 	bmpfile_t *img;
@@ -176,13 +176,13 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	// Rotate image and output rotated image
-	time_t t1, t2;
-	time(&t1);
-	bmpfile_t *rimg = rotate(img, rotationDegrees, nthreads);
-	time(&t2);
-	printf("Time to perform parallel rotation using %d threads: %d seconds\n", nthreads, (int) difftime(t2, t1));
+	// Rotate image and save/output rotated image
+	struct timeval t1, t2;
+	gettimeofday(&t1, NULL);
+	bmpfile_t *rimg = rotate(img, rotationDegrees);
+	gettimeofday(&t2, NULL);
+	printf("Time to perform sequential rotation: %.2f seconds\n", difftime(t2, t1));
 	bmp_save(rimg, "test-out.bmp"); 
-
+	
 	return 0;
 }

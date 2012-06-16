@@ -11,4 +11,3 @@ par:
 clean:
 	rm *.bmp
 	rm bin/*
->>>>>>> modified the structure of corner-detection folder
