@@ -9,8 +9,10 @@ all:
 	make --directory=Rotation all
 
 	#scaling
+	cd scaling; ./compile.sh; cd -
 
 	#gaussian-blur
 	make --directory=gaussianblur all
 
 	#high-pass-filter
+	cd HPF_Overlay; ./compile.sh; cd -

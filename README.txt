@@ -7,8 +7,11 @@ corner-detection/
 	test-files/		contains the images used to test the corner detection program
 	Makefile		makefile to compile the sequential and parallel versions of the program	
 	time log.txt	log of runs of the sequential and parallel versions on 
+gaussianblur/
+HPF_Overlay/
 Motion_Estimation/
 Rotation/
+scaling/
 
 
 Compiling
@@ -27,6 +30,9 @@ The main executable, cs133-img-proc.sh can be found at the root. Each function's
 Input Files
 ===========
 Input files can be found at the root.
+	motion-test-input-1.bmp and motion-test-input-2.bmp are used for motion-estimation
+	corner-test-red-square.bmp is used for corner-detection
+	test-input.bmp is used for all other functions
 
 
 Usage
