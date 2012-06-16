@@ -1,0 +1,121 @@
+====================================================
+corner-test-red-square-big.bmp: 10000 × 10000; 100MB
+====================================================
+2.5 GHz Intel Core i7 (4 cores - 8 threads)
+-------------------------------------------
+time ./bin/corner-detection-sequential test-files/corner-test-red-square-big.bmp corner-test-red-square-big-with-corners.bmp 0
+      404.42 real       403.69 user         0.65 sys
+
+time ./bin/corner-detection-parallel\(x-loop\) test-files/corner-test-red-square-big.bmp  corner-test-red-square-big-with-corners.bmp 0 1
+      427.59 real       426.62 user         0.75 sys
+
+time ./bin/corner-detection-parallel\(x-loop\) test-files/corner-test-red-square-big.bmp  corner-test-red-square-big-with-corners.bmp 0 2
+      220.32 real       431.62 user         0.69 sys
+
+time ./bin/corner-detection-parallel\(x-loop\) test-files/corner-test-red-square-big.bmp  corner-test-red-square-big-with-corners.bmp 0 4
+      142.54 real       542.48 user         0.99 sys
+
+time ./bin/corner-detection-parallel\(x-loop\) test-files/corner-test-red-square-big.bmp  corner-test-red-square-big-with-corners.bmp 0 8
+      106.68 real       767.10 user         1.49 sys
+
+time ./bin/corner-detection-parallel\(x-loop\) test-files/corner-test-red-square-big.bmp  corner-test-red-square-big-with-corners.bmp 0 16
+      107.13 real       765.41 user         1.51 sys
+
+lnxsrv (16 threads)
+-------------------
+Command being timed: "./corner-detection-sequential /tmp/corner-test-red-square-big.bmp /tmp/corner-test-red-square-big-with-corners.bmp 0"
+	User time (seconds): 547.61
+	System time (seconds): 0.53
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 9:08.22
+
+Command being timed: "./corner-detection-parallel-x-loop /tmp/corner-test-red-square-big.bmp /tmp/corner-test-red-square-big-with-corners.bmp 0 1"
+	User time (seconds): 633.956u 
+	System time (seconds): 0.474 
+	Percent of CPU this job got: 99.9%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 10:34.51 
+
+Command being timed: "./corner-detection-parallel-x-loop /tmp/corner-test-red-square-big.bmp /tmp/corner-test-red-square-big-with-corners.bmp 0 2"
+	User time (seconds): 634.34
+	System time (seconds): 0.58
+	Percent of CPU this job got: 196%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:22.77
+
+Command being timed: "./corner-detection-parallel-x-loop /tmp/corner-test-red-square-big.bmp /tmp/corner-test-red-square-big-with-corners.bmp 0 4"
+	User time (seconds): 635.24
+	System time (seconds): 0.53
+	Percent of CPU this job got: 380%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:47.11
+
+Command being timed: "./corner-detection-parallel-x-loop /tmp/corner-test-red-square-big.bmp /tmp/corner-test-red-square-big-with-corners.bmp 0 8"
+	User time (seconds): 660.23
+	System time (seconds): 0.54
+	Percent of CPU this job got: 717%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:32.11
+
+Command being timed: "./corner-detection-parallel-x-loop /tmp/corner-test-red-square-big.bmp /tmp/corner-test-red-square-big-with-corners.bmp 0 16"
+	User time (seconds): 1095.87
+	System time (seconds): 0.58
+	Percent of CPU this job got: 1397%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:18.44
+
+============================================
+corner-test-red-square.bmp: 256 × 256; 70 KB
+============================================
+2.5 GHz Intel Core i7 (4 cores - 8 threads)
+-------------------------------------------
+time -l ./bin/corner-detection-sequential test-files/corner-test-red-square.bmp corner-test-red-square-with-corners.bmp
+        0.23 real         0.23 user         0.00 sys
+
+time -l ./bin/corner-detection-parallel\(x-loop\) test-files/corner-test-red-square.bmp corner-test-red-square-with-corners.bmp 0 1
+        0.24 real         0.23 user         0.00 sys
+
+time -l ./bin/corner-detection-parallel\(x-loop\) test-files/corner-test-red-square.bmp corner-test-red-square-with-corners.bmp 0 2
+        0.12 real         0.24 user         0.00 sys
+
+time -l ./bin/corner-detection-parallel\(x-loop\) test-files/corner-test-red-square.bmp corner-test-red-square-with-corners.bmp 0 4
+        0.08 real         0.29 user         0.00 sys
+
+time -l ./bin/corner-detection-parallel\(x-loop\) test-files/corner-test-red-square.bmp corner-test-red-square-with-corners.bmp 0 8
+        0.06 real         0.39 user         0.00 sys
+
+time -l ./bin/corner-detection-parallel\(x-loop\) test-files/corner-test-red-square.bmp corner-test-red-square-with-corners.bmp 0 16
+        0.06 real         0.39 user         0.00 sys
+
+lnxsrv (16 threads)
+-------------------
+Command being timed: "./corner-detection-sequential /tmp/corner-test-red-square.bmp /tmp/corner-test-red-square-with-corners.bmp"
+	User time (seconds): 0.32
+	System time (seconds): 0.00
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.32
+
+Command being timed: "./corner-detection-parallel-x-loop /tmp/corner-test-red-square.bmp /tmp/corner-test-red-square-with-corners.bmp 0 1"
+	User time (seconds): 0.37
+	System time (seconds): 0.00
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.37
+
+Command being timed: "./corner-detection-parallel-x-loop /tmp/corner-test-red-square.bmp /tmp/corner-test-red-square-with-corners.bmp 0 2"
+	User time (seconds): 0.37
+	System time (seconds): 0.00
+	Percent of CPU this job got: 195%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.19
+
+Command being timed: "./corner-detection-parallel-x-loop /tmp/corner-test-red-square.bmp /tmp/corner-test-red-square-with-corners.bmp 0 4"
+	User time (seconds): 0.41
+	System time (seconds): 0.00
+	Percent of CPU this job got: 377%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.10
+
+Command being timed: "./corner-detection-parallel-x-loop /tmp/corner-test-red-square.bmp /tmp/corner-test-red-square-with-corners.bmp 0 8"
+	User time (seconds): 0.57
+	System time (seconds): 0.00
+	Percent of CPU this job got: 714%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.08
+
+Command being timed: "./corner-detection-parallel-x-loop /tmp/corner-test-red-square.bmp /tmp/corner-test-red-square-with-corners.bmp 0 16"
+	User time (seconds): 0.94
+	System time (seconds): 0.00
+	Percent of CPU this job got: 1368%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.06
